@@ -1,4 +1,4 @@
-﻿# TYN Release Evidence Agent
+# TYN Release Evidence Agent
 
 An AI-powered Jira Release Evidence Agent developed for The Yellow Network AI Engineer Assessment.
 
@@ -87,23 +87,23 @@ This prevents missing evidence from being interpreted as a successful release ch
 
 ```text
 tyn-release-agent/
-â”œâ”€â”€ reports/
-â”‚   â”œâ”€â”€ assessment_R2.4.md
-â”‚   â””â”€â”€ issue_mapping.json
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ import_jira.py
-â”‚   â”œâ”€â”€ test_gemini_tools.py
-â”‚   â””â”€â”€ src/
-â”‚       â”œâ”€â”€ agent.py
-â”‚       â”œâ”€â”€ jira_tools.py
-â”‚       â””â”€â”€ test_jira_tool.py
-â”œâ”€â”€ traces/
-â”‚   â””â”€â”€ assessment_R2.4.json
-â”œâ”€â”€ .env.example
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ pytest.ini
-â”œâ”€â”€ requirements.txt
-â””â”€â”€ README.md
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ reports/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ assessment_R2.4.md
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ issue_mapping.json
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ import_jira.py
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test_gemini_tools.py
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ agent.py
+Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ jira_tools.py
+Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ test_jira_tool.py
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ traces/
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ assessment_R2.4.json
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pytest.ini
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ requirements.txt
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ README.md
 ```
 
 The original assessment PDF and source dataset are not included in this repository.
@@ -216,9 +216,6 @@ Maps source dataset IDs to their corresponding Jira issue keys.
 
 ## 9. Latest Assessment Results
 
-<details>
-<summary>Latest R2.4 assessment summary</summary>
-
 | Result | Count |
 |---|---:|
 | PASS | 4 |
@@ -228,3 +225,37 @@ Maps source dataset IDs to their corresponding Jira issue keys.
 **Overall decision: BLOCKED**
 
 The assessment identified release-blocking failures and requirements where available evidence was insufficient to establish compliance.
+
+## 10. Model Usage and Runtime Metrics
+
+| Metric | Value |
+|---|---:|
+| Model | `gemini-3.5-flash-lite` |
+| Model calls | 41 |
+| Input tokens | 123,970 |
+| Output tokens | 5,888 |
+| Total tokens | 129,858 |
+| Runtime | 265.92 seconds |
+
+Source: `traces/assessment_R2.4.json`.
+
+## 11. Tests
+
+Run `python -m pytest -q` from the project root. Latest recorded result: **36 passed**.
+
+## 12. Known Limitations
+
+- Requirements are iterated from a predefined list in code; the agent does not independently discover all requirements from Jira.
+- The manifest key and target configuration values are passed as inputs rather than dynamically read from the Jira manifest.
+- Jira search is capped at the configured page limit of 20 pages.
+- Gemini free-tier quotas and rate limits can interrupt execution.
+- Evidence citations are model-written text and are not independently validated by code.
+- Importer reruns have limitations; verify existing issues, comments, and relationships before rerunning to avoid duplicates.
+- Testing has been performed against the supplied assessment dataset only.
+- LLM-generated assessments can vary between runs and should be reviewed against Jira evidence.
+
+## 13. AI Assistance Disclosure
+
+ChatGPT was used for implementation discussions, debugging, code review, test refinement, and documentation. Google Gemini powers the application's Jira evidence-investigation workflow.
+
+I reviewed the implementation and configuration, ran the test suite, checked Jira import counts, and reviewed the generated assessment report and investigation trace.
