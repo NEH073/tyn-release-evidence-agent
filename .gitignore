@@ -1,0 +1,17 @@
+.venv/
+venv/
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+# Assessment source materials and packaged submission
+inputs/
+TYN_Release_Evidence_Agent_Submission.zip
+
+# Superseded assessment runs
+reports/assessment_R2.4_recheck.md
+traces/assessment_R2.4_recheck.json
+
+# Local submission copy
+submission/
