@@ -1,93 +1,93 @@
 # TYN Release Evidence Agent
 
-An AI-powered Jira Release Evidence Agent developed for The Yellow Network AI Engineer Assessment.
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-1C3C3C)](https://www.langchain.com/langgraph)
+[![Jira Cloud](https://img.shields.io/badge/Integration-Jira%20Cloud-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
+[![Tests](https://img.shields.io/badge/Tests-36%20passed-success)](#tests)
 
-The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report.
+An evidence-grounded AI agent that investigates software release requirements using Jira, evaluates linked issues and comments against a target release configuration, and generates an auditable release-readiness assessment.
 
-## 1. Technology Stack
+Developed for **The Yellow Network AI Engineer Assessment**.
 
-- Python 3.12
-- LangChain and LangGraph
-- Google Gemini (`gemini-3.5-flash-lite`)
-- Jira Cloud REST API
-- Requests
-- python-dotenv
-- Pytest
+> **Latest recorded assessment: BLOCKED** — 4 requirements passed, 4 failed, and 4 had insufficient evidence. The agent reports the evidence it finds rather than treating missing information as a pass.
 
-## 2. Architecture
+## Contents
 
-The application consists of two main stages.
+- [What it does](#what-it-does)
+- [Architecture](#architecture)
+- [Technology stack](#technology-stack)
+- [Key design decisions](#key-design-decisions)
+- [Project structure](#project-structure)
+- [Setup](#setup)
+- [Import the Jira dataset](#import-the-jira-dataset)
+- [Run the agent](#run-the-agent)
+- [Output artifacts](#output-artifacts)
+- [Assessment results](#assessment-results)
+- [Model usage and runtime](#model-usage-and-runtime)
+- [Tests](#tests)
+- [Known limitations](#known-limitations)
 
-### Jira Dataset Import
+## What it does
 
-`src/import_jira.py` imports the supplied assessment dataset into a dedicated Jira project.
+The project has two stages:
 
-It:
-- Creates Jira issues from source records.
-- Preserves source IDs and record details in Jira descriptions.
-- Imports comments while retaining original fictional event text.
-- Preserves scenario actor, role, and event timestamp in comment bodies.
-- Creates Jira relationships after issue import.
-- Saves source-ID-to-Jira-key mappings in `reports/issue_mapping.json`.
+1. **Dataset import:** imports the supplied assessment records into a dedicated Jira project, preserving source identifiers, comments, scenario actors, roles, timestamps, and issue relationships.
+2. **Evidence investigation:** a LangGraph ReAct agent retrieves scoped Jira evidence, investigates release requirements, validates the model's response structure, and produces requirement-level and overall decisions.
 
-The assessment agent retrieves evidence from Jira rather than reading the source dataset directly.
+The agent's Jira tools retrieve issue descriptions, comments, and linked issues. The generated report includes decisions, explanations, supporting Jira references, and outstanding verification.
 
-### AI Evidence Investigation
+## Architecture
 
-`src/src/agent.py` implements a LangGraph ReAct agent.
+### End-to-end flow
 
-The investigation workflow:
+```mermaid
+flowchart TD
+    A[Assessment dataset] --> B[Jira dataset importer]
+    B --> C[(Jira project)]
+    D[Release configuration] --> E[LangGraph ReAct agent]
+    C --> F[Scoped Jira tools]
+    E --> F
+    F --> G[Issues, comments and links]
+    G --> H[Requirement evidence evaluation]
+    H --> I[Validated requirement decisions]
+    I --> J[Overall release decision]
+    J --> K[Markdown assessment report]
+    J --> L[JSON investigation trace]
+```
 
-1. Retrieves the release manifest from Jira.
-2. Identifies mandatory linked requirements.
-3. Investigates requirements using Jira tools.
-4. Retrieves relevant issue descriptions, comments, and linked issues.
-5. Evaluates evidence against the target release configuration.
-6. Produces a decision, explanation, supporting evidence, and outstanding verification.
-7. Calculates the overall release decision.
-8. Saves the assessment report and investigation trace.
+### Main components
 
-### Jira Tools
+| Component | Responsibility |
+|---|---|
+| `src/import_jira.py` | Imports dataset issues, comments, and relationships into Jira |
+| `src/src/agent.py` | Runs the LangGraph ReAct investigation workflow |
+| `src/src/jira_tools.py` | Provides issue retrieval and dataset-scoped Jira search |
+| `reports/` | Stores the assessment report and source-to-Jira issue mapping |
+| `traces/` | Stores the JSON investigation trace |
 
-Implemented in `src/src/jira_tools.py`:
+The assessment agent uses Jira as its evidence source; it does not read the original dataset directly during investigation.
 
-- `get_jira_issue`: retrieves an issue, comments, and linked issues.
-- `search_jira_issues`: searches issues within the configured project and assessment dataset scope.
+## Technology stack
 
-## 3. Design Choices
+- **Language:** Python 3.12
+- **Agent orchestration:** LangChain, LangGraph
+- **LLM:** Google Gemini (`gemini-3.5-flash-lite`)
+- **External system:** Jira Cloud REST API
+- **Configuration and HTTP:** Requests, python-dotenv
+- **Testing:** Pytest
 
-### Jira as the evidence source
+## Key design decisions
 
-The agent retrieves evidence from Jira instead of directly querying the imported dataset. This keeps the investigation aligned with the system where release evidence is maintained.
+- **Jira as the evidence source:** investigations retrieve evidence from Jira, the system where release evidence is maintained.
+- **Dataset-scoped retrieval:** searches are constrained by the configured Jira project and dataset label; retrieved results receive additional filtering.
+- **Structured response checks:** model responses are parsed and checked for required sections and valid decision values. Validation failures fail closed to `INSUFFICIENT_EVIDENCE`.
+- **Bounded retries and pagination:** Jira retrieval supports pagination and bounded retries for transient failures, including rate limits, server errors, timeouts, and connection failures.
+- **Conservative release decisions:** a failed requirement blocks the release; insufficient evidence requires review; readiness is returned only when required evidence is complete and no failures or unresolved evidence issues remain.
 
-### Dataset-scoped searches
-
-Jira searches are constrained by the configured project and dataset label. Additional filtering is applied to retrieved results to reduce the risk of investigating unrelated issues.
-
-### Response validation
-
-The agent parses fixed-format model responses, checks required sections and decision values programmatically, and fails closed to `INSUFFICIENT_EVIDENCE` when validation fails.
-
-### Bounded API retries and pagination
-
-Jira retrieval supports pagination and bounded retries for transient failures, including rate limits, server errors, timeouts, and connection failures.
-
-### Conservative release decisions
-
-The overall decision follows an evidence-first approach:
-
-- Any requirement marked `FAIL` results in `BLOCKED`.
-- Missing or insufficient evidence results in `NEEDS_REVIEW` when no requirement has failed.
-- `READY` is returned only when the required evidence is complete and no failures or unresolved evidence issues remain.
-
-This prevents missing evidence from being interpreted as a successful release check.
-
-## 4. Project Structure
+## Project structure
 
 ```text
 tyn-release-agent/
-|-- inputs/
-|   |-- dataset.json (provided separately)
 |-- reports/
 |   |-- assessment_R2.4.md
 |   |-- issue_mapping.json
@@ -107,11 +107,11 @@ tyn-release-agent/
 |-- README.md
 ```
 
-The original assessment PDF and source dataset are not included in this repository. Obtain `dataset.json` from the supplied assessment ZIP and copy it into the `inputs/` directory before running the importer.
+The original assessment PDF and source dataset are not included. Obtain `dataset.json` from the supplied assessment ZIP and place it in `inputs/` before running the importer.
 
-## 5. Configuration
+## Setup
 
-Python 3.12 is recommended.
+Python 3.12 is recommended. The commands below use PowerShell.
 
 Create and activate a virtual environment:
 
@@ -126,9 +126,7 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file using `.env.example` as a template.
-
-Configure the following variables:
+Create a `.env` file using `.env.example` as a template:
 
 ```env
 JIRA_BASE_URL=https://your-domain.atlassian.net
@@ -140,7 +138,7 @@ GOOGLE_API_KEY=your-google-api-key
 
 Use your own authorized Jira and Google API credentials. Never commit `.env` or expose API tokens.
 
-## 6. Jira Dataset Import
+## Import the Jira dataset
 
 The importer expects the assessment dataset at `inputs/dataset.json`.
 
@@ -164,11 +162,11 @@ The completed assessment import contains:
 | Comments | 2,059 |
 | Jira relationships | 76 |
 
-The importer writes its mapping to `reports/issue_mapping.json`.
+The importer writes the source-ID-to-Jira-key mapping to `reports/issue_mapping.json`.
 
-Avoid rerunning imports against an already populated project without verifying existing issues, comments, and relationships.
+> **Caution:** Avoid rerunning imports against an already populated project without first verifying existing issues, comments, and relationships.
 
-## 7. Run the Agent
+## Run the agent
 
 From the project root, with the virtual environment activated:
 
@@ -176,13 +174,13 @@ From the project root, with the virtual environment activated:
 python .\src\src\agent.py
 ```
 
-The assessment can also be run with explicit configuration:
+Or pass the assessment configuration explicitly:
 
 ```powershell
 python .\src\src\agent.py --project-key TYN --dataset-label tyn-release-assessment-v2 --manifest-key TYN-360 --release R2.4 --commit b7a91f2 --prompt p7 --environment production --service atlas-assistant
 ```
 
-Assessment configuration:
+The recorded assessment configuration:
 
 | Parameter | Value |
 |---|---|
@@ -195,41 +193,31 @@ Assessment configuration:
 | Service | `atlas-assistant` |
 | Release manifest | `TYN-360` |
 
-## 8. Output Artifacts
+## Output artifacts
 
-### Assessment report
+| Artifact | Description |
+|---|---|
+| `reports/assessment_R2.4.md` | Requirement IDs, Jira references, decisions, explanations, supporting evidence, and outstanding verification |
+| `traces/assessment_R2.4.json` | Release configuration, requirement investigations, model usage information, and execution details |
+| `reports/issue_mapping.json` | Mapping from source dataset IDs to Jira issue keys |
 
-`reports/assessment_R2.4.md`
+## Assessment results
 
-Contains requirement IDs, Jira references, decisions, explanations, supporting evidence, and outstanding verification.
+Latest recorded run for release `R2.4`:
 
-### Investigation trace
-
-`traces/assessment_R2.4.json`
-
-Contains release configuration, requirement investigations, model usage information, and execution details.
-
-### Issue mapping
-
-`reports/issue_mapping.json`
-
-Maps source dataset IDs to their corresponding Jira issue keys.
-
-## 9. Latest Assessment Results
-
-| Result | Count |
+| Requirement decision | Count |
 |---|---:|
 | PASS | 4 |
 | FAIL | 4 |
 | INSUFFICIENT_EVIDENCE | 4 |
 
-**Overall decision: BLOCKED**
+**Overall release decision: BLOCKED**
 
-The assessment identified release-blocking failures and requirements where available evidence was insufficient to establish compliance.
+The assessment found release-blocking failures and requirements for which the available evidence was insufficient to establish compliance. This is the agent's assessment result, not a claim that the software release itself was deployed or changed.
 
-## 10. Model Usage and Runtime Metrics
+## Model usage and runtime
 
-| Metric | Value |
+| Metric | Recorded value |
 |---|---:|
 | Model | `gemini-3.5-flash-lite` |
 | Model calls | 41 |
@@ -240,11 +228,17 @@ The assessment identified release-blocking failures and requirements where avail
 
 Source: `traces/assessment_R2.4.json`.
 
-## 11. Tests
+## Tests
 
-Run `python -m pytest -q` from the project root. Latest recorded result: **36 passed**.
+Run the test suite from the project root:
 
-## 12. Known Limitations
+```powershell
+python -m pytest -q
+```
+
+Latest recorded result: **36 passed**.
+
+## Known limitations
 
 - Requirements are iterated from a predefined list in code; the agent does not independently discover all requirements from Jira.
 - The manifest key and target configuration values are passed as inputs rather than dynamically read from the Jira manifest.
