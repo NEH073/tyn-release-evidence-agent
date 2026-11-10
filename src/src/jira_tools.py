@@ -171,10 +171,6 @@ def get_jira_issue(issue_key: str) -> str:
                     "body": adf_to_text(
                         comment.get("body", {})
                     ).strip(),
-                    "jira_author": (
-                        comment.get("author", {}).get("displayName")
-                    ),
-                    "jira_created": comment.get("created"),
                 })
 
             total_comments = page.get("total")

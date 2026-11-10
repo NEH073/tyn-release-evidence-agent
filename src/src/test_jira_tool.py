@@ -172,7 +172,7 @@ def test_get_jira_issue_returns_issue_and_comments(monkeypatch):
     assert result["description"] == "Verification completed"
     assert len(result["comments"]) == 1
     assert result["comments"][0]["body"] == "Production test passed"
-    assert result["comments"][0]["jira_author"] == "Test Engineer"
+    assert "jira_author" not in result["comments"][0]
     assert result["linked_issues"][0]["issue_key"] == "TYN-187"
 
 

@@ -10,7 +10,6 @@ The agent investigates software release requirements using Jira evidence, evalua
 - LangChain and LangGraph
 - Google Gemini (`gemini-3.5-flash-lite`)
 - Jira Cloud REST API
-- Pydantic
 - Requests
 - python-dotenv
 - Pytest
@@ -65,9 +64,9 @@ The agent retrieves evidence from Jira instead of directly querying the imported
 
 Jira searches are constrained by the configured project and dataset label. Additional filtering is applied to retrieved results to reduce the risk of investigating unrelated issues.
 
-### Structured evidence investigation
+### Response validation
 
-Pydantic models and structured assessment outputs help maintain consistent requirement-level decisions and report fields.
+The agent parses fixed-format model responses, checks required sections and decision values programmatically, and fails closed to `INSUFFICIENT_EVIDENCE` when validation fails.
 
 ### Bounded API retries and pagination
 
@@ -87,26 +86,28 @@ This prevents missing evidence from being interpreted as a successful release ch
 
 ```text
 tyn-release-agent/
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ reports/
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ assessment_R2.4.md
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ issue_mapping.json
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ import_jira.py
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test_gemini_tools.py
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ src/
-Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ agent.py
-Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ jira_tools.py
-Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ test_jira_tool.py
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ traces/
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ assessment_R2.4.json
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .gitignore
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pytest.ini
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ requirements.txt
-Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ README.md
+|-- inputs/
+|   |-- dataset.json (provided separately)
+|-- reports/
+|   |-- assessment_R2.4.md
+|   |-- issue_mapping.json
+|-- src/
+|   |-- import_jira.py
+|   |-- test_gemini_tools.py
+|   |-- src/
+|       |-- agent.py
+|       |-- jira_tools.py
+|       |-- test_jira_tool.py
+|-- traces/
+|   |-- assessment_R2.4.json
+|-- .env.example
+|-- .gitignore
+|-- pytest.ini
+|-- requirements.txt
+|-- README.md
 ```
 
-The original assessment PDF and source dataset are not included in this repository.
+The original assessment PDF and source dataset are not included in this repository. Obtain `dataset.json` from the supplied assessment ZIP and copy it into the `inputs/` directory before running the importer.
 
 ## 5. Configuration
 
@@ -253,9 +254,3 @@ Run `python -m pytest -q` from the project root. Latest recorded result: **36 pa
 - Importer reruns have limitations; verify existing issues, comments, and relationships before rerunning to avoid duplicates.
 - Testing has been performed against the supplied assessment dataset only.
 - LLM-generated assessments can vary between runs and should be reviewed against Jira evidence.
-
-## 13. AI Assistance Disclosure
-
-ChatGPT was used for implementation discussions, debugging, code review, test refinement, and documentation. Google Gemini powers the application's Jira evidence-investigation workflow.
-
-I reviewed the implementation and configuration, ran the test suite, checked Jira import counts, and reviewed the generated assessment report and investigation trace.
