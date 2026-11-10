@@ -7,7 +7,7 @@
 
 An evidence-grounded AI agent that investigates software release requirements using Jira, evaluates linked issues and comments against a target release configuration, and generates an auditable release-readiness assessment.
 
-Developed for **The Yellow Network AI Engineer Assessment**.
+A practical demonstration of evidence-grounded release-readiness analysis using Jira and AI agents.
 
 > **Latest recorded assessment: BLOCKED** — 4 requirements passed, 4 failed, and 4 had insufficient evidence. The agent reports the evidence it finds rather than treating missing information as a pass.
 
