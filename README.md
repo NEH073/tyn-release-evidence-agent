@@ -31,7 +31,7 @@ A practical demonstration of evidence-grounded release-readiness analysis using 
 
 The project has two stages:
 
-1. **Dataset import:** imports the supplied assessment records into a dedicated Jira project, preserving source identifiers, comments, scenario actors, roles, timestamps, and issue relationships.
+1. **Dataset import:** imports the supplied assessment records into a dedicated Jira project, maps source IDs to Jira keys, imports comment text, and creates issue relationships. The current importer does not preserve original comment authors, roles, or event timestamps as Jira comment metadata.
 2. **Evidence investigation:** a LangGraph ReAct agent retrieves scoped Jira evidence, investigates release requirements, validates the model's response structure, and produces requirement-level and overall decisions.
 
 The agent's Jira tools retrieve issue descriptions, comments, and linked issues. The generated report includes decisions, explanations, supporting Jira references, and outstanding verification.
