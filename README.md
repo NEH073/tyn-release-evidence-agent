@@ -3,11 +3,9 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-1C3C3C)](https://www.langchain.com/langgraph)
 [![Jira Cloud](https://img.shields.io/badge/Integration-Jira%20Cloud-0052CC?logo=jira&logoColor=white)](https://www.atlassian.com/software/jira)
-[![Tests](https://img.shields.io/badge/Tests-36%20passed-success)](#tests)
+[![Tests](https://img.shields.io/badge/Tests-43%20passed-success)](#tests)
 
 An evidence-grounded AI agent that investigates software release requirements using Jira, evaluates linked issues and comments against a target release configuration, and generates an auditable release-readiness assessment.
-
-A practical demonstration of evidence-grounded release-readiness analysis using Jira and AI agents.
 
 > **Latest recorded assessment: BLOCKED** — 4 requirements passed, 4 failed, and 4 had insufficient evidence. The agent reports the evidence it finds rather than treating missing information as a pass.
 
@@ -31,7 +29,7 @@ A practical demonstration of evidence-grounded release-readiness analysis using 
 
 The project has two stages:
 
-1. **Dataset import:** imports the supplied assessment records into a dedicated Jira project, maps source IDs to Jira keys, imports comment text, and creates issue relationships. The current importer does not preserve original comment authors, roles, or event timestamps as Jira comment metadata.
+1. **Dataset import:** imports the supplied assessment records into a dedicated Jira project, maps source IDs to Jira keys, imports comments, and creates issue relationships. Recorded actor, role, and event timestamp are preserved verbatim in the comment text; Jira's native author and timestamp belong to the importer.
 2. **Evidence investigation:** a LangGraph ReAct agent retrieves scoped Jira evidence, investigates release requirements, validates the model's response structure, and produces requirement-level and overall decisions.
 
 The agent's Jira tools retrieve issue descriptions, comments, and linked issues. The generated report includes decisions, explanations, supporting Jira references, and outstanding verification.
@@ -91,8 +89,12 @@ tyn-release-agent/
 |-- reports/
 |   |-- assessment_R2.4.md
 |   |-- issue_mapping.json
+|-- .github/
+|   |-- workflows/
+|       |-- tests.yml
 |-- src/
 |   |-- import_jira.py
+|   |-- test_import_jira.py
 |   |-- test_gemini_tools.py
 |   |-- src/
 |       |-- agent.py
@@ -236,7 +238,7 @@ Run the test suite from the project root:
 python -m pytest -q
 ```
 
-Latest recorded result: **36 passed**.
+Latest recorded result: **43 passed**. GitHub Actions runs this test suite on pushes to `main` and pull requests targeting `main`.
 
 ## Known limitations
 
@@ -246,5 +248,5 @@ Latest recorded result: **36 passed**.
 - Gemini free-tier quotas and rate limits can interrupt execution.
 - Evidence citations are model-written text and are not independently validated by code.
 - Importer reruns have limitations; verify existing issues, comments, and relationships before rerunning to avoid duplicates.
-- Testing has been performed against the supplied assessment dataset only.
+- Automated tests use mocked Jira responses; a live Jira integration test is not part of the default test suite.
 - LLM-generated assessments can vary between runs and should be reviewed against Jira evidence.
