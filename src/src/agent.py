@@ -391,61 +391,6 @@ def validate_assessment(answer, messages):
         "tool_errors": tool_errors,
     }
 
-    for section in REQUIRED_SECTIONS:
-
-        value = section_values.get(section.lower())
-
-        if value is None:
-            problems.append(f"Missing section: {section}")
-        elif not value:
-            problems.append(f"Empty section: {section}")
-
-    # Check that the decision is valid.
-    decision = get_decision(answer)
-
-    if decision == "INSUFFICIENT_EVIDENCE" and not re.search(
-        r"^\s*Decision\s*:\s*INSUFFICIENT_EVIDENCE\s*$",
-        answer,
-        re.IGNORECASE | re.MULTILINE,
-    ):
-        problems.append("Missing or invalid structured decision.")
-
-    # Check Jira tool responses for errors.
-    tool_errors = []
-
-    for message in messages:
-
-        if getattr(message, "type", None) != "tool":
-            continue
-
-        tool_content = content_to_text(
-            getattr(message, "content", "")
-        ).strip()
-
-        if tool_content.startswith(JIRA_ERROR_PREFIXES):
-            tool_errors.append({
-                "tool": getattr(message, "name", None),
-                "error": tool_content,
-            })
-
-    if tool_errors:
-        problems.append(
-            f"{len(tool_errors)} Jira tool error(s) occurred."
-        )
-
-    if not answer.strip() or answer.startswith(
-        "No final assessment was returned"
-    ):
-        problems.append("No final model assessment was returned.")
-
-    return {
-        "valid": not problems,
-        "decision": decision,
-        "problems": problems,
-        "tool_errors": tool_errors,
-    }
-
-
 def serialize_messages(messages):
     """Serialize messages for the investigation trace."""
 
