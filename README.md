@@ -242,8 +242,8 @@ Latest recorded result: **43 passed**. GitHub Actions runs this test suite on pu
 
 ## Known limitations
 
-- Requirements are iterated from a predefined list in code; the agent does not independently discover all requirements from Jira.
-- The manifest key and target configuration values are passed as inputs rather than dynamically read from the Jira manifest.
+- Requirement discovery is manifest-driven: the agent retrieves the configured Jira manifest and assesses its linked requirement issues. It does not independently discover unlinked requirements across the Jira project.
+- Target release attributes (release, commit, prompt, environment, and service) are supplied as CLI inputs; they are not currently derived from or cross-validated against fields in the Jira manifest.
 - Jira search is capped at the configured page limit of 20 pages.
 - Gemini free-tier quotas and rate limits can interrupt execution.
 - Evidence citations are model-written text and are not independently validated by code.
