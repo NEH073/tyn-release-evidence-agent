@@ -16,27 +16,27 @@ The agent investigates software release requirements using Jira evidence, evalua
 
 ## 2. Architecture
 
+## 2. Architecture
+
+```mermaid
 flowchart TD
     A["Assessment Dataset<br/>JSON"] --> B["Jira Dataset Importer"]
     B --> C["Jira Project<br/>TYN"]
     C --> D["Release Manifest<br/>TYN-360"]
     D --> E["LangGraph ReAct Agent"]
-
     E --> F["Scoped Jira Tools"]
-    F --> G["Retrieve Issues, Comments<br/>and Linked Issues"]
+    F --> G["Retrieve Issues, Comments and Linked Issues"]
     G --> H["Requirement Evidence Evaluation"]
-
     H --> I{"Requirement Decision"}
     I -->|PASS| J["PASS"]
     I -->|FAIL| K["FAIL"]
     I -->|Insufficient Evidence| L["INSUFFICIENT_EVIDENCE"]
-
     J --> M["Overall Release Decision"]
     K --> M
     L --> M
-
     M --> N["Markdown Assessment Report"]
     M --> O["JSON Investigation Trace"]
+```
 
 The application consists of two main stages.
 
