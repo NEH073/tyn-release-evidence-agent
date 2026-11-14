@@ -1,8 +1,8 @@
 # AI-Powered Release Readiness & Evidence Agent
 
-An AI-powered, Jira-integrated Release Readiness and Evidence Agent built using Python, LangGraph, and Google Gemini.
+An AI-powered Jira Release Evidence Agent developed for The Yellow Network AI Engineer Assessment.
 
-The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report with requirement-level decisions.
+The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report.
 
 ## 1. Technology Stack
 
@@ -56,23 +56,23 @@ Implemented in `src/src/jira_tools.py`:
 
 ## 3. Design Choices
 
-### Jira as the Evidence Source
+### Jira as the evidence source
 
 The agent retrieves evidence from Jira instead of directly querying the imported dataset. This keeps the investigation aligned with the system where release evidence is maintained.
 
-### Dataset-Scoped Searches
+### Dataset-scoped searches
 
 Jira searches are constrained by the configured project and dataset label. Additional filtering is applied to retrieved results to reduce the risk of investigating unrelated issues.
 
-### Response Validation
+### Response validation
 
 The agent parses fixed-format model responses, checks required sections and decision values programmatically, and fails closed to `INSUFFICIENT_EVIDENCE` when validation fails.
 
-### Bounded API Retries and Pagination
+### Bounded API retries and pagination
 
 Jira retrieval supports pagination and bounded retries for transient failures, including rate limits, server errors, timeouts, and connection failures.
 
-### Conservative Release Decisions
+### Conservative release decisions
 
 The overall decision follows an evidence-first approach:
 
@@ -82,17 +82,21 @@ The overall decision follows an evidence-first approach:
 
 This prevents missing evidence from being interpreted as a successful release check.
 
-## 4. Project Structure
+## Project structure
 
 ```text
-project-root/
+tyn-release-agent/
 |-- inputs/
 |   |-- dataset.json (provided separately)
 |-- reports/
 |   |-- assessment_R2.4.md
 |   |-- issue_mapping.json
+|-- .github/
+|   |-- workflows/
+|       |-- tests.yml
 |-- src/
 |   |-- import_jira.py
+|   |-- test_import_jira.py
 |   |-- test_gemini_tools.py
 |   |-- src/
 |       |-- agent.py
@@ -107,11 +111,11 @@ project-root/
 |-- README.md
 ```
 
-The original assessment PDF and source dataset are not included in this repository. Obtain `dataset.json` from the supplied assessment ZIP and copy it into the `inputs/` directory before running the importer.
+The original assessment PDF and source dataset are not included. Obtain `dataset.json` from the supplied assessment ZIP and place it in `inputs/` before running the importer.
 
-## 5. Configuration
+## Setup
 
-Python 3.12 is recommended.
+Python 3.12 is recommended. The commands below use PowerShell.
 
 Create and activate a virtual environment:
 
@@ -126,9 +130,7 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file using `.env.example` as a template.
-
-Configure the following variables:
+Create a `.env` file using `.env.example` as a template:
 
 ```env
 JIRA_BASE_URL=https://your-domain.atlassian.net
@@ -140,7 +142,7 @@ GOOGLE_API_KEY=your-google-api-key
 
 Use your own authorized Jira and Google API credentials. Never commit `.env` or expose API tokens.
 
-## 6. Jira Dataset Import
+## Import the Jira dataset
 
 The importer expects the assessment dataset at `inputs/dataset.json`.
 
@@ -164,11 +166,11 @@ The completed assessment import contains:
 | Comments | 2,059 |
 | Jira relationships | 76 |
 
-The importer writes its mapping to `reports/issue_mapping.json`.
+The importer writes the source-ID-to-Jira-key mapping to `reports/issue_mapping.json`.
 
-Avoid rerunning imports against an already populated project without verifying existing issues, comments, and relationships.
+> **Caution:** Avoid rerunning imports against an already populated project without first verifying existing issues, comments, and relationships.
 
-## 7. Run the Agent
+## Run the agent
 
 From the project root, with the virtual environment activated:
 
@@ -176,13 +178,13 @@ From the project root, with the virtual environment activated:
 python .\src\src\agent.py
 ```
 
-The assessment can also be run with explicit configuration:
+Or pass the assessment configuration explicitly:
 
 ```powershell
 python .\src\src\agent.py --project-key TYN --dataset-label tyn-release-assessment-v2 --manifest-key TYN-360 --release R2.4 --commit b7a91f2 --prompt p7 --environment production --service atlas-assistant
 ```
 
-Assessment configuration:
+The recorded assessment configuration:
 
 | Parameter | Value |
 |---|---|
@@ -197,39 +199,41 @@ Assessment configuration:
 
 ## 8. Output Artifacts
 
-### Assessment Report
+### Assessment report
 
 `reports/assessment_R2.4.md`
 
 Contains requirement IDs, Jira references, decisions, explanations, supporting evidence, and outstanding verification.
 
-### Investigation Trace
+### Investigation trace
 
 `traces/assessment_R2.4.json`
 
 Contains release configuration, requirement investigations, model usage information, and execution details.
 
-### Issue Mapping
+### Issue mapping
 
 `reports/issue_mapping.json`
 
 Maps source dataset IDs to their corresponding Jira issue keys.
 
-## 9. Latest Assessment Results
+## Assessment results
 
-| Result | Count |
+Latest recorded run for release `R2.4`:
+
+| Requirement decision | Count |
 |---|---:|
 | PASS | 4 |
 | FAIL | 4 |
 | INSUFFICIENT_EVIDENCE | 4 |
 
-**Overall Decision: BLOCKED**
+**Overall decision: BLOCKED**
 
-The assessment identified release-blocking failures and requirements where available evidence was insufficient to establish compliance.
+The assessment found release-blocking failures and requirements for which the available evidence was insufficient to establish compliance. This is the agent's assessment result, not a claim that the software release itself was deployed or changed.
 
-## 10. Model Usage and Runtime Metrics
+## Model usage and runtime
 
-| Metric | Value |
+| Metric | Recorded value |
 |---|---:|
 | Model | `gemini-3.5-flash-lite` |
 | Model calls | 41 |
@@ -240,23 +244,17 @@ The assessment identified release-blocking failures and requirements where avail
 
 Source: `traces/assessment_R2.4.json`.
 
-## 11. Tests
+## Tests
 
-Run the test suite from the project root:
+Run `python -m pytest -q` from the project root. Latest recorded result: **36 passed**.
 
-```powershell
-python -m pytest -q
-```
+## Known limitations
 
-Latest recorded result: **36 passed**.
-
-## 12. Known Limitations
-
-- Requirements are iterated from a predefined list in code; the agent does not independently discover all requirements from Jira.
-- The manifest key and target configuration values are passed as inputs rather than dynamically read from the Jira manifest.
+- Requirement discovery is manifest-driven: the agent retrieves the configured Jira manifest and assesses its linked requirement issues. It does not independently discover unlinked requirements across the Jira project.
+- Target release attributes (release, commit, prompt, environment, and service) are supplied as CLI inputs; they are not currently derived from or cross-validated against fields in the Jira manifest.
 - Jira search is capped at the configured page limit of 20 pages.
 - Gemini free-tier quotas and rate limits can interrupt execution.
 - Evidence citations are model-written text and are not independently validated by code.
 - Importer reruns have limitations; verify existing issues, comments, and relationships before rerunning to avoid duplicates.
-- Testing has been performed against the supplied assessment dataset only.
+- Automated tests use mocked Jira responses; a live Jira integration test is not part of the default test suite.
 - LLM-generated assessments can vary between runs and should be reviewed against Jira evidence.
