@@ -16,7 +16,7 @@ The agent investigates software release requirements using Jira evidence, evalua
 
 ## 2. Architecture
 
-## 2. Architecture
+
 
 ```mermaid
 flowchart TD
