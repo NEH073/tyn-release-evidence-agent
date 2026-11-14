@@ -1,8 +1,8 @@
-# TYN Release Evidence Agent
+# AI-Powered Release Readiness & Evidence Agent
 
-An AI-powered Jira Release Evidence Agent developed for The Yellow Network AI Engineer Assessment.
+An AI-powered, Jira-integrated Release Readiness and Evidence Agent built using Python, LangGraph, and Google Gemini.
 
-The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report.
+The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report with requirement-level decisions.
 
 ## 1. Technology Stack
 
@@ -56,23 +56,23 @@ Implemented in `src/src/jira_tools.py`:
 
 ## 3. Design Choices
 
-### Jira as the evidence source
+### Jira as the Evidence Source
 
 The agent retrieves evidence from Jira instead of directly querying the imported dataset. This keeps the investigation aligned with the system where release evidence is maintained.
 
-### Dataset-scoped searches
+### Dataset-Scoped Searches
 
 Jira searches are constrained by the configured project and dataset label. Additional filtering is applied to retrieved results to reduce the risk of investigating unrelated issues.
 
-### Response validation
+### Response Validation
 
 The agent parses fixed-format model responses, checks required sections and decision values programmatically, and fails closed to `INSUFFICIENT_EVIDENCE` when validation fails.
 
-### Bounded API retries and pagination
+### Bounded API Retries and Pagination
 
 Jira retrieval supports pagination and bounded retries for transient failures, including rate limits, server errors, timeouts, and connection failures.
 
-### Conservative release decisions
+### Conservative Release Decisions
 
 The overall decision follows an evidence-first approach:
 
@@ -85,7 +85,7 @@ This prevents missing evidence from being interpreted as a successful release ch
 ## 4. Project Structure
 
 ```text
-tyn-release-agent/
+project-root/
 |-- inputs/
 |   |-- dataset.json (provided separately)
 |-- reports/
@@ -197,19 +197,19 @@ Assessment configuration:
 
 ## 8. Output Artifacts
 
-### Assessment report
+### Assessment Report
 
 `reports/assessment_R2.4.md`
 
 Contains requirement IDs, Jira references, decisions, explanations, supporting evidence, and outstanding verification.
 
-### Investigation trace
+### Investigation Trace
 
 `traces/assessment_R2.4.json`
 
 Contains release configuration, requirement investigations, model usage information, and execution details.
 
-### Issue mapping
+### Issue Mapping
 
 `reports/issue_mapping.json`
 
@@ -223,7 +223,7 @@ Maps source dataset IDs to their corresponding Jira issue keys.
 | FAIL | 4 |
 | INSUFFICIENT_EVIDENCE | 4 |
 
-**Overall decision: BLOCKED**
+**Overall Decision: BLOCKED**
 
 The assessment identified release-blocking failures and requirements where available evidence was insufficient to establish compliance.
 
@@ -242,7 +242,13 @@ Source: `traces/assessment_R2.4.json`.
 
 ## 11. Tests
 
-Run `python -m pytest -q` from the project root. Latest recorded result: **36 passed**.
+Run the test suite from the project root:
+
+```powershell
+python -m pytest -q
+```
+
+Latest recorded result: **36 passed**.
 
 ## 12. Known Limitations
 
