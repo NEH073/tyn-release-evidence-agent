@@ -15,9 +15,6 @@ The agent investigates software release requirements using Jira evidence, evalua
 - Pytest
 
 ## 2. Architecture
-
-
-
 ```mermaid
 flowchart TD
     A["Assessment Dataset<br/>JSON"] --> B["Jira Dataset Importer"]
@@ -219,7 +216,7 @@ The recorded assessment configuration:
 | Service | `atlas-assistant` |
 | Release manifest | `TYN-360` |
 
-## 8. Output Artifacts
+## Output Artifacts
 
 ### Assessment report
 
@@ -258,17 +255,17 @@ The assessment found release-blocking failures and requirements for which the av
 | Metric | Recorded value |
 |---|---:|
 | Model | `gemini-3.5-flash-lite` |
-| Model calls | 41 |
-| Input tokens | 123,970 |
-| Output tokens | 5,888 |
-| Total tokens | 129,858 |
-| Runtime | 265.92 seconds |
+| Token usage records | 42 |
+| Input tokens | 199,708 |
+| Output tokens | 6,110 |
+| Total tokens | 205,818 |
+| Runtime | 219.42 seconds |
 
 Source: `traces/assessment_R2.4.json`.
 
 ## Tests
 
-Run `python -m pytest -q` from the project root. Latest recorded result: **36 passed**.
+Run `python -m pytest -q` from the project root. Latest recorded result: **43 passed**.
 
 ## Known limitations
 
