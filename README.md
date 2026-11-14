@@ -1,5 +1,7 @@
 # AI-Powered Release Readiness & Evidence Agent
 
+[![Tests](https://github.com/NEH073/ai-release-readiness-evidence-agent-/actions/workflows/tests.yml/badge.svg)](https://github.com/NEH073/ai-release-readiness-evidence-agent-/actions/workflows/tests.yml)
+
 An AI-powered Jira Release Evidence Agent developed for The Yellow Network AI Engineer Assessment.
 
 The agent investigates software release requirements using Jira evidence, evaluates linked issues and comments against a target release configuration, and generates an evidence-based release-readiness report.
